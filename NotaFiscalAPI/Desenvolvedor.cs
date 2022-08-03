@@ -1,10 +1,6 @@
 ﻿namespace NotaFiscalAPI
 {
 
-    //public class CamposAuxiliares
-    //{
-    //}
-
     public class Desenvolvedor
     {
         public DateTime? createdAt { get; set; }
@@ -15,7 +11,5 @@
         public string email { get; set; }
         public string id { get; set; }
 
-        //public CamposAuxiliares CamposAuxiliares { get; set; }
-        //public object serializableProperties { get; set; }
     }
 }
