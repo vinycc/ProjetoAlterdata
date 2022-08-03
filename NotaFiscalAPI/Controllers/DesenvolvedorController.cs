@@ -10,8 +10,7 @@ namespace NotaFiscalAPI.Controllers
     [ApiController]
     public class DesenvolvedorController : ControllerBase
     {
-        public static List<Desenvolvedor> listaDesenvolvedores = new List<Desenvolvedor>();
-
+        
         private readonly DataContext _context;
 
         public DesenvolvedorController(DataContext context)
@@ -19,9 +18,14 @@ namespace NotaFiscalAPI.Controllers
             this._context = context;
         }
 
+
+        // Busca todos os desenvolvedores cadastrados no Banco de Dados.
         [HttpGet]
         public async Task<ActionResult<List<Desenvolvedor>>> Get()
         {
+            List<Desenvolvedor> listaDesenvolvedores = new List<Desenvolvedor>();
+
+
             //Fetch the JSON string from URL.
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -36,6 +40,7 @@ namespace NotaFiscalAPI.Controllers
         }
 
         
+        // Busca um desenvolvedor do WebService
         [HttpGet("{id}")]
         public async Task<ActionResult<Desenvolvedor>> Get(string id)
         {
@@ -56,6 +61,8 @@ namespace NotaFiscalAPI.Controllers
             }
         }
 
+
+        // Busca todos os desenvolvedores cadastrados no banco de dados
         [HttpGet]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> GetfromDB()
@@ -66,6 +73,7 @@ namespace NotaFiscalAPI.Controllers
         }
 
 
+        // Busca um determinado desenvolvedor do banco de dados
         [HttpGet("DataBase/{id}")]
         public async Task<ActionResult<Desenvolvedor>> GetfromDB(string id)
         {
@@ -81,6 +89,7 @@ namespace NotaFiscalAPI.Controllers
 
         }
 
+        // Insere desenvolvedor do banco de dodos
         [HttpPost]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> AddDesenvolvedor(Desenvolvedor dev)
@@ -90,10 +99,10 @@ namespace NotaFiscalAPI.Controllers
 
             return Ok(await _context.Desenvolvedores.ToListAsync());
 
-            //listaDesenvolvedores.Add(dev);
-            //return Ok(listaDesenvolvedores);
         }
 
+
+        // Altera dados do desenvolvedor
         [HttpPut]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> UpdateDesenvolvedor(Desenvolvedor request)
@@ -116,6 +125,8 @@ namespace NotaFiscalAPI.Controllers
             return Ok(await _context.Desenvolvedores.ToListAsync());
         }
 
+
+        // Exclui Desenvolvedor do Banco de Dados
         [HttpDelete]
         [Route("DataBase/")]
         public async Task<ActionResult<Desenvolvedor>> DeleteDesenvolvedor(string id)
