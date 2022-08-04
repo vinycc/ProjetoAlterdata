@@ -1,7 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿/*
+ 
+ * TODO:
+ 
+ * Manter sua solução com dados sincronizados com a origem dos dados
+ 
+ * Há um problema no cadastro de DEVs atual, os e-mails deveriam ter domínio '@prosoft.com.br', realize essa correção
+ * Está validando apenas novos DEVs. Não está atualizando os já cadastrados.
+
+ */ 
+
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace NotaFiscalAPI.Controllers
@@ -10,7 +23,7 @@ namespace NotaFiscalAPI.Controllers
     [ApiController]
     public class DesenvolvedorController : ControllerBase
     {
-        
+
         private readonly DataContext _context;
 
         public DesenvolvedorController(DataContext context)
@@ -18,15 +31,32 @@ namespace NotaFiscalAPI.Controllers
             this._context = context;
         }
 
+        // Validar email e verificar se dominio está correto
+        static bool validateEmail(string email)
+        {
+            if (email == null)
+            {
+                return false;
+            }
 
-        // Busca todos os desenvolvedores cadastrados no Banco de Dados.
+            if (new EmailAddressAttribute().IsValid(email) && email.EndsWith("@prosoft.com.br"))
+            {
+                return true;
+            }
+            else
+            {
+
+                return false;
+            }
+        }
+
+
+        // Obter todos os DEVs cadastrados no WebService
         [HttpGet]
         public async Task<ActionResult<List<Desenvolvedor>>> Get()
         {
             List<Desenvolvedor> listaDesenvolvedores = new List<Desenvolvedor>();
 
-
-            //Fetch the JSON string from URL.
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             string json = (new WebClient()).DownloadString("https://61a170e06c3b400017e69d00.mockapi.io/DevTest/Dev");
@@ -34,17 +64,14 @@ namespace NotaFiscalAPI.Controllers
             var devs = JsonConvert.DeserializeObject<IEnumerable<Desenvolvedor>>(json);
             listaDesenvolvedores.AddRange(devs);
 
-
             return Ok(listaDesenvolvedores);
-
         }
 
-        
-        // Busca um desenvolvedor do WebService
+
+        // Busca um DEV específico no WebService
         [HttpGet("{id}")]
         public async Task<ActionResult<Desenvolvedor>> Get(string id)
         {
-            //Fetch the JSON string from URL.
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
@@ -62,22 +89,19 @@ namespace NotaFiscalAPI.Controllers
         }
 
 
-        // Busca todos os desenvolvedores cadastrados no banco de dados
+        // Obter todos os DEVs cadastrados no Banco de Dados
         [HttpGet]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> GetfromDB()
         {
-
             return Ok(await _context.Desenvolvedores.ToListAsync());
-
         }
 
 
-        // Busca um determinado desenvolvedor do banco de dados
+        // Obter um determinado DEV no banco de dados
         [HttpGet("DataBase/{id}")]
         public async Task<ActionResult<Desenvolvedor>> GetfromDB(string id)
         {
-
             var dev = await _context.Desenvolvedores.FindAsync(id);
 
             if (dev == null)
@@ -86,23 +110,29 @@ namespace NotaFiscalAPI.Controllers
             }
 
             return Ok(dev);
-
         }
 
-        // Insere desenvolvedor do banco de dodos
+
+        // Inserir um novo DEV
         [HttpPost]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> AddDesenvolvedor(Desenvolvedor dev)
         {
-            _context.Desenvolvedores.Add(dev);
-            await _context.SaveChangesAsync();
+            if (validateEmail(dev.email))
+            {
+                _context.Desenvolvedores.Add(dev);
+                await _context.SaveChangesAsync();
 
-            return Ok(await _context.Desenvolvedores.ToListAsync());
-
+                return Ok(await _context.Desenvolvedores.ToListAsync());
+            }
+            else
+            {
+                return BadRequest("Email invalido");
+            }
         }
 
 
-        // Altera dados do desenvolvedor
+        // Atualizar dado de DEV específico
         [HttpPut]
         [Route("DataBase/")]
         public async Task<ActionResult<List<Desenvolvedor>>> UpdateDesenvolvedor(Desenvolvedor request)
@@ -126,12 +156,11 @@ namespace NotaFiscalAPI.Controllers
         }
 
 
-        // Exclui Desenvolvedor do Banco de Dados
+        // Exclui DEV específico do Banco de Dados
         [HttpDelete]
         [Route("DataBase/")]
         public async Task<ActionResult<Desenvolvedor>> DeleteDesenvolvedor(string id)
         {
-
             var dbDev = await _context.Desenvolvedores.FindAsync(id);
 
             if (dbDev == null)
@@ -145,6 +174,5 @@ namespace NotaFiscalAPI.Controllers
             return Ok(await _context.Desenvolvedores.ToListAsync());
 
         }
-
     }
 }
